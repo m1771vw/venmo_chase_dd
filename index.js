@@ -43,7 +43,7 @@ venmosheetJson = venmosheetJson.filter(
     x.Description !== "Note" &&
     x.Amount !== "Amount (total)" &&
     typeof x.Description === "string" &&
-    typeof x.Amount === "string"
+    typeof x.Amount === "number" // sometimes is a string?? but is now a number now somehow
 );
 // console.log(venmosheetJson)
 console.log("Trying to find matches.....");
@@ -51,6 +51,7 @@ let foundCharges = [];
 let missingCharges = [];
 doordashSheetJson.forEach((charge, index) => {
   let formattedCharge = charge.Amount.toString().replace("-", "")
+  let chargeFound = false;
   if(formattedCharge[formattedCharge.length-2] === ".")
     formattedCharge = formattedCharge + "0"
   venmosheetJson.forEach((x) => {
@@ -61,9 +62,10 @@ doordashSheetJson.forEach((charge, index) => {
       // console.log("FOUND YOU: ", x.Description, ", Index:", index);
       // doordashSheetJson.splice(index, 1); 
       foundCharges.push(charge);
+      chargeFound = true;
     } 
   });
-  missingCharges.push(charge);
+  if (chargeFound === false) missingCharges.push(charge);
 })
 
 // doordashSheetJson.forEach((charge, index) => {
