@@ -3,7 +3,7 @@ if (typeof require !== "undefined") XLSX = require("xlsx");
 // Load the workbook
 // TODO: - app config 
 let workbook = XLSX.readFile(
-  "Chase4589_Activity20210501_20210521_20210521.csv"
+  "Chase4589_Activity20210701_20210728_20210729.csv"
 );
 let sheetName = workbook.SheetNames[0];
 let worksheet = workbook.Sheets[sheetName];
@@ -20,7 +20,7 @@ let doordashSheetJson = sheetJson.filter((x) =>
 /*
   Venmo Worksheet
 */
-let venmoworkbook = XLSX.readFile("venmo_statement0501_0521.csv");
+let venmoworkbook = XLSX.readFile("venmo_statement_0701_0728.csv");
 let venmosheetName = venmoworkbook.SheetNames[0];
 let venmoworksheet = venmoworkbook.Sheets[venmosheetName];
 let venmosheets = venmoworkbook.Sheets[venmosheetName];
@@ -47,6 +47,8 @@ venmosheetJson = venmosheetJson.filter(
 );
 // console.log(venmosheetJson)
 console.log("Trying to find matches.....");
+let foundCharges = [];
+let missingCharges = [];
 doordashSheetJson.forEach((charge, index) => {
   let formattedCharge = charge.Amount.toString().replace("-", "")
   if(formattedCharge[formattedCharge.length-2] === ".")
@@ -57,16 +59,26 @@ doordashSheetJson.forEach((charge, index) => {
     let formattedAmount = x.Amount.toString().replace("+ $", "")
     if (formattedAmount === formattedCharge) {
       // console.log("FOUND YOU: ", x.Description, ", Index:", index);
-      doordashSheetJson.splice(index, 1);
-    }
+      // doordashSheetJson.splice(index, 1); 
+      foundCharges.push(charge);
+    } 
   });
+  missingCharges.push(charge);
 })
 
-doordashSheetJson.forEach((charge, index) => {
-  console.log("REMAINING: ", charge.Description, " ", charge.Amount)
+// doordashSheetJson.forEach((charge, index) => {
+//   console.log("REMAINING: ", charge.Description, " ", charge.Amount)
+
+// });
+
+foundCharges.forEach((charge, index) => {
+  console.log("FOUND CHARGES: ", charge.Description, " ", charge.Amount)
 
 });
+missingCharges.forEach((charge, index) => {
+  console.log("NOT FOUND CHARGES: ", charge.Description, " ", charge.Amount)
 
+});
 // venmosheetJson.forEach(x => {
 //     // console.log("Searching :", charge)
 //     // console.log("Checking: " + doordashSheetJson[3].Amount.toString().replace('-','').trim()+"vs."+ x.Amount.toString().replace('+ $',''))
