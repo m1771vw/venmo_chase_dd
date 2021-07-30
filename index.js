@@ -1,6 +1,6 @@
 // Import the library
 if (typeof require !== 'undefined') XLSX = require('xlsx')
-
+const reporting = require('./Reporting')
 const importSheet = (filename, descriptionColumn, amountColumn) => {
   // Load the workbook
   // TODO: - app config
@@ -13,48 +13,8 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
     .map((x) => ({ Description: x[descriptionColumn], Amount: x[amountColumn] }))
 }
 
-const findMatches = (doordashSheetJson, venmosheetJson) => {
-  console.log('Trying to find matches.....')
-  let foundCharges = []
-  let missingCharges = []
-  doordashSheetJson.forEach((charge, index) => {
-    let formattedCharge = charge.Amount.toString().replace('-', '')
-    let chargeFound = false
-    if (formattedCharge[formattedCharge.length - 2] === '.') formattedCharge = formattedCharge + '0'
-    venmosheetJson.forEach((x) => {
-      // console.log("Searching :", charge)
-      // console.log("Checking: " + charge.Amount.toString().replace('-','').trim()+"vs."+ x.Amount.toString().replace('+ $',''))
-      let formattedAmount = x.Amount.toString().replace('+ $', '')
-      if (formattedAmount === formattedCharge) {
-        // console.log("FOUND YOU: ", x.Description, ", Index:", index);
-        // doordashSheetJson.splice(index, 1);
-        foundCharges.push(charge)
-        chargeFound = true
-      }
-    })
-    if (chargeFound === false) missingCharges.push(charge)
-  })
-
-  // doordashSheetJson.forEach((charge, index) => {
-  //   console.log("REMAINING: ", charge.Description, " ", charge.Amount)
-
-  // });
-
-  foundCharges.forEach((charge, index) => {
-    console.log('FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  })
-  missingCharges.forEach((charge, index) => {
-    console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  })
-  // venmosheetJson.forEach(x => {
-  //     // console.log("Searching :", charge)
-  //     // console.log("Checking: " + doordashSheetJson[3].Amount.toString().replace('-','').trim()+"vs."+ x.Amount.toString().replace('+ $',''))
-  //     if(x.Amount.toString().replace('+ $', '') === doordashSheetJson[3].Amount.toString().replace('-',''))
-  //       console.log("FOUND YOU",x.Description)
-  //   })
-}
 const main = () => {
-  console.log("Starting Program...")
+  console.log('Starting Program...')
   let chaseSheetJson = importSheet('Chase4589_Activity20210701_20210728_20210729.csv', 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
 
@@ -77,6 +37,12 @@ const main = () => {
       typeof x.Description === 'string' &&
       typeof x.Amount === 'number' // sometimes is a string?? but is now a number now somehow
   )
-  findMatches(doordashSheetJson, venmosheetJson)
+  let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmosheetJson)
+  foundCharges.forEach((charge, index) => {
+    console.log('FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
+  })
+  missingCharges.forEach((charge, index) => {
+    console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
+  })
 }
 main()
