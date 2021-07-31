@@ -13,22 +13,9 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
     .map((x) => ({ Description: x[descriptionColumn], Amount: x[amountColumn] }))
 }
 
-const main = () => {
-  console.log('Starting Program...')
-  let chaseSheetJson = importSheet('Chase4589_Activity20210701_20210728_20210729.csv', 'Description', 'Amount')
-  let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
-
-  /*
-    Venmo Worksheet
-  */
-  let venmosheetJson = importSheet('venmo_statement_0701_0728.csv', '__EMPTY_4', '__EMPTY_7')
-
-  // Array to hold all the ones that just have numbers. TODO: - Print these out in another report to fix these manually
-  let venmosheetJsonHasNumber = venmosheetJson.filter(
-    (x) => typeof x.Description === 'number' || typeof x.Amount === 'number'
-  )
+const filterUnwantedVenmoData = (venmoSheetJson) => {
   // Reduce VenmoSheet and take out the ones I don't want
-  venmosheetJson = venmosheetJson.filter(
+  return venmoSheetJson.filter(
     (x) =>
       x.Description !== undefined &&
       x.Amount !== undefined &&
@@ -37,12 +24,25 @@ const main = () => {
       typeof x.Description === 'string' &&
       typeof x.Amount === 'number' // sometimes is a string?? but is now a number now somehow
   )
-  let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmosheetJson)
-  foundCharges.forEach((charge, index) => {
-    console.log('FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  })
-  missingCharges.forEach((charge, index) => {
-    console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  })
+}
+
+const main = () => {
+  console.log('Starting Program...')
+  let chaseSheetJson = importSheet('Chase4589_Activity20210701_20210728_20210729.csv', 'Description', 'Amount')
+  let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
+  let venmoSheetJson = importSheet('venmo_statement_0701_0728.csv', '__EMPTY_4', '__EMPTY_7')
+  venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
+  // Find the matches
+  let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
+  // Print Matches
+  // foundCharges.forEach((charge, index) => {
+  //   console.log('FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
+  // })
+  // missingCharges.forEach((charge, index) => {
+  //   console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
+  // })
+  // Find any duplicates
+  let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
+  // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)
 }
 main()
