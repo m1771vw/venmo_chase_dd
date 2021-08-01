@@ -43,7 +43,9 @@ const main = () => {
   // })
   // Find any duplicates
   // let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
-  let expensiveDoordashPrices = reporting.findPricesOverAmount(doordashSheetJson, 20)
+  // let expensiveDoordashPrices = reporting.findPricesOverAmount(doordashSheetJson, 20)
+  let singlePlacePrices = reporting.generateSinglePlaceReport(chaseSheetJson, 'COSTCO')
+  console.log(singlePlacePrices)
   // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)
 }
 main()

@@ -34,33 +34,42 @@ const findDuplicatePrices = (workSheetJson) => {
   workSheetJson.forEach((charge, index) => {
     for (let i = index + 1; i < allAmountList.length; i++) {
       if (charge.Amount === allAmountList[i]) {
-          amountFoundIndices.push(index)
-          amountFoundIndices.push(i)
+        amountFoundIndices.push(index)
+        amountFoundIndices.push(i)
       }
     }
   })
-  amountFoundIndices.forEach(x => duplicateAmounts.push(workSheetJson[x]))
+  amountFoundIndices.forEach((x) => duplicateAmounts.push(workSheetJson[x]))
   return duplicateAmounts
 }
 
 // Provide a vendor to look for and it'll return a report
 // Ex: Give me all prices from Stater Bros
-// Return all prices and return total price 
+// Return all prices and return total price
+// Also, use include not hard equal
+// Ex: WHOLEFDS JAM -> WHOLEFDS JAM 10201 & WHOLEFDS JAM LA
 const generateSinglePlaceReport = (workSheetJson, storeName) => {
-
+  // Filter by the storename on description
+  let storesFound = workSheetJson.filter((x) => x.Description.includes(storeName))
+  let totalSpent = storesFound.reduce((accumulator, currentValue) => ({
+    Amount: accumulator.Amount + currentValue.Amount,
+  }))
+  return { 
+      storesFound, totalSpent
+  }
 }
 // Return all the items that are over the high price point
 const findPricesOverAmount = (workSheetJson, findPrice) => {
-    // TODO: - Need to make negative positive or vice versa
-    let expensiveAmounts = []
-    let allAmountList = workSheetJson.map((x) => Math.abs(x.Amount))
-    let amountFoundIndices = []
+  // TODO: - Need to make negative positive or vice versa
+  let expensiveAmounts = []
+  let allAmountList = workSheetJson.map((x) => Math.abs(x.Amount))
+  let amountFoundIndices = []
 
-    allAmountList.forEach((amount, index) => {
-        if (amount >= findPrice) amountFoundIndices.push(index)
-    })
-    amountFoundIndices.forEach(x => expensiveAmounts.push(workSheetJson[x]))
+  allAmountList.forEach((amount, index) => {
+    if (amount >= findPrice) amountFoundIndices.push(index)
+  })
+  amountFoundIndices.forEach((x) => expensiveAmounts.push(workSheetJson[x]))
 
-    return expensiveAmounts
+  return expensiveAmounts
 }
-module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount }
+module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount, generateSinglePlaceReport }
