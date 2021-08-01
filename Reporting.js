@@ -45,4 +45,18 @@ const findDuplicatePrices = (workSheetJson) => {
 
 // Provide a vendor to look for and it'll return a report
 const generateSinglePlaceReport = () => {}
-module.exports = { findMatches, findDuplicatePrices }
+// Return all the items that are over the high price point
+const findPricesOverAmount = (workSheetJson, findPrice) => {
+    // TODO: - Need to make negative positive or vice versa
+    let expensiveAmounts = []
+    let allAmountList = workSheetJson.map((x) => x.Amount * -1)
+    let amountFoundIndices = []
+
+    allAmountList.forEach((amount, index) => {
+        if (amount >= findPrice) amountFoundIndices.push(index)
+    })
+    amountFoundIndices.forEach(x => expensiveAmounts.push(workSheetJson[x]))
+
+    return expensiveAmounts
+}
+module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount }

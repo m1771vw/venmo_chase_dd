@@ -42,7 +42,8 @@ const main = () => {
   //   console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
   // })
   // Find any duplicates
-  let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
+  // let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
+  let expensiveDoordashPrices = reporting.findPricesOverAmount(doordashSheetJson, 20)
   // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)
 }
 main()
