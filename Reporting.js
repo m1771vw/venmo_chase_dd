@@ -44,12 +44,16 @@ const findDuplicatePrices = (workSheetJson) => {
 }
 
 // Provide a vendor to look for and it'll return a report
-const generateSinglePlaceReport = () => {}
+// Ex: Give me all prices from Stater Bros
+// Return all prices and return total price 
+const generateSinglePlaceReport = (workSheetJson, storeName) => {
+
+}
 // Return all the items that are over the high price point
 const findPricesOverAmount = (workSheetJson, findPrice) => {
     // TODO: - Need to make negative positive or vice versa
     let expensiveAmounts = []
-    let allAmountList = workSheetJson.map((x) => x.Amount * -1)
+    let allAmountList = workSheetJson.map((x) => Math.abs(x.Amount))
     let amountFoundIndices = []
 
     allAmountList.forEach((amount, index) => {
