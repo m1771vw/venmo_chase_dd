@@ -1,5 +1,6 @@
 // Import the library
 if (typeof require !== 'undefined') XLSX = require('xlsx')
+fs = require('fs')
 const reporting = require('./Reporting')
 const importSheet = (filename, descriptionColumn, amountColumn) => {
   // Load the workbook
@@ -45,7 +46,13 @@ const main = () => {
   // let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
   // let expensiveDoordashPrices = reporting.findPricesOverAmount(doordashSheetJson, 20)
   let singlePlacePrices = reporting.generateSinglePlaceReport(chaseSheetJson, 'COSTCO')
-  console.log(singlePlacePrices)
+  // console.log(singlePlacePrices)
+  reporting.printTextFile('foundCharges.txt', foundCharges)
+  reporting.printTextFile('missingCharges.txt', missingCharges)
+  reporting.printTextFile('singePlacePrices.txt', singlePlacePrices)
+  reporting.printTextFile('doordashTotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
+
+
   // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)
 }
 main()

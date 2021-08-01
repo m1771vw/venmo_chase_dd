@@ -72,4 +72,15 @@ const findPricesOverAmount = (workSheetJson, findPrice) => {
 
   return expensiveAmounts
 }
-module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount, generateSinglePlaceReport }
+
+// Remove brackets, curlies, replaces commands with new lines
+const formatReport = (report) => {
+    return report.replace(/\[/g,'').replace(/\]/g, '').replace(/\{/g,'').replace(/\}\,/g,'\n')
+}
+
+const printTextFile = (outputFileName, report) => {
+    fs.writeFile(outputFileName, formatReport(JSON.stringify(report)), (err) => {
+        if (err) return console.log(err);
+      })
+}
+module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount, generateSinglePlaceReport, formatReport, printTextFile }
