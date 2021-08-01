@@ -51,6 +51,8 @@ const main = () => {
   reporting.printTextFile('missingCharges.txt', missingCharges)
   reporting.printTextFile('singePlacePrices.txt', singlePlacePrices)
   reporting.printTextFile('doordashTotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
+  reporting.printTextFile('olibolitotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
+  reporting.printTextFile('pricesOver50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
 
 
   // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)

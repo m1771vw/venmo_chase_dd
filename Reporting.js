@@ -77,9 +77,17 @@ const findPricesOverAmount = (workSheetJson, findPrice) => {
 const formatReport = (report) => {
     return report.replace(/\[/g,'').replace(/\]/g, '').replace(/\{/g,'').replace(/\}\,/g,'\n')
 }
-
-const printTextFile = (outputFileName, report) => {
-    fs.writeFile(outputFileName, formatReport(JSON.stringify(report)), (err) => {
+// Print text file and has default folder name to reports/
+const printTextFile = (outputFileName, report, folderName='reports/') => {
+    // let folderName = 'reports/'
+    try {
+        if (!fs.existsSync(folderName)) {
+          fs.mkdirSync(folderName)
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    fs.writeFile(folderName + outputFileName, formatReport(JSON.stringify(report)), (err) => {
         if (err) return console.log(err);
       })
 }
