@@ -134,6 +134,44 @@ const generateCategoryReport = (filename) => {
 
   printTextFile('Categories Report.txt', filteredWorksheet)
 }
+
+const generateVenmoChargeReport = (filename) => {
+  let workbook = XLSX.readFile(filename) // load the actual workbook
+  let sheetName = workbook.SheetNames[0] // get the name of the first sheet
+  let worksheet = workbook.Sheets[sheetName] // get the actual sheet
+  // Return JSON version of the sheet
+  let filteredWorksheet = XLSX.utils
+    .sheet_to_json(worksheet)
+    .map((x) => ({ Description: x['__EMPTY_4'], Amount: x['__EMPTY_7'], Type: x['__EMPTY_2'], From: x['__EMPTY_5'], To: x['__EMPTY_6'] }))
+    filteredWorksheet = filteredWorksheet.filter(
+      (x) =>
+        x.Description !== undefined &&
+        x.Amount !== undefined &&
+        x.Description !== 'Note' &&
+        x.Amount !== 'Amount (total)' &&
+        typeof x.Description === 'string' &&
+        typeof x.Amount === 'string' // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+    )
+
+    // Loop through the entier thing and make two different ones for charge and payment
+    let charge = {}
+    let payment = {}
+    filteredWorksheet.forEach((x) => {
+      if (categories.hasOwnProperty(x.Category)) categories[x.Category] = categories[x.Category] + x.Amount
+      else categories[x.Category] = x.Amount
+    })
+  
+    Object.keys(categories).forEach((x) => {
+      filteredWorksheet.unshift({ [x]: categories[x] })
+    })
+  
+    printTextFile('Categories Report.txt', filteredWorksheet)
+}
+
+const generateVenmoPaymentReport = (filename) => {
+
+}
+
 module.exports = {
   findMatches,
   findDuplicatePrices,
@@ -142,4 +180,6 @@ module.exports = {
   formatReport,
   printTextFile,
   generateCategoryReport,
+  generateVenmoChargeReport,
+  generateVenmoPaymentReport
 }

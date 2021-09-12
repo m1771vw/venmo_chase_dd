@@ -16,7 +16,6 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
 
 const filterUnwantedVenmoData = (venmoSheetJson) => {
   // Reduce VenmoSheet and take out the ones I don't want
-  venmoSheetJson.filter(x => x.Description !== undefined)
   return venmoSheetJson.filter(
     (x) =>
       x.Description !== undefined &&
@@ -30,6 +29,8 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
 
 const main = () => {
   console.log('Starting Program...')
+  reporting.generateVenmoChargeReport('statements/08/venmo.csv')
+  reporting.generateVenmoPaymentReport('statements/08/venmo.csv')
   let chaseSheetJson = importSheet('statements/08/Chase4589.csv', 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
   let venmoSheetJson = importSheet('statements/08/venmo.csv', '__EMPTY_4', '__EMPTY_7')
