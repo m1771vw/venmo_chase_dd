@@ -1,3 +1,7 @@
+// Import the library
+if (typeof require !== 'undefined') XLSX = require('xlsx')
+fs = require('fs')
+
 const findMatches = (doordashSheetJson, venmosheetJson) => {
   console.log('Trying to find matches.....')
   let foundCharges = []
@@ -52,11 +56,15 @@ const generateSinglePlaceReport = (workSheetJson, storeName) => {
   // Filter by the storename on description
   let storesFound = workSheetJson.filter((x) => x.Description.includes(storeName))
 
-  let totalSpent = storesFound.length > 0 ? storesFound.reduce((accumulator, currentValue) => ({
-    Amount: accumulator.Amount + currentValue.Amount,
-  })) : []
-  return { 
-      storesFound, totalSpent
+  let totalSpent =
+    storesFound.length > 0
+      ? storesFound.reduce((accumulator, currentValue) => ({
+          Amount: accumulator.Amount + currentValue.Amount,
+        }))
+      : []
+  return {
+    storesFound,
+    totalSpent,
   }
 }
 // Return all the items that are over the high price point
@@ -76,20 +84,62 @@ const findPricesOverAmount = (workSheetJson, findPrice) => {
 
 // Remove brackets, curlies, replaces commands with new lines
 const formatReport = (report) => {
-    return report.replace(/\[/g,'').replace(/\]/g, '').replace(/\{/g,'').replace(/\}\,/g,'\n')
+  return report.replace(/\[/g, '').replace(/\]/g, '').replace(/\{/g, '').replace(/\}\,/g, '\n')
 }
 // Print text file and has default folder name to reports/
-const printTextFile = (outputFileName, report, folderName='reports/') => {
-    // let folderName = 'reports/'
-    try {
-        if (!fs.existsSync(folderName)) {
-          fs.mkdirSync(folderName)
-        }
-      } catch (err) {
-        console.error(err)
-      }
-    fs.writeFile(folderName + outputFileName, formatReport(JSON.stringify(report)), (err) => {
-        if (err) return console.log(err);
-      })
+// Params:
+//  report: Array
+const printTextFile = (outputFileName, report, folderName = 'reports/') => {
+  // let folderName = 'reports/'
+  try {
+    if (!fs.existsSync(folderName)) {
+      fs.mkdirSync(folderName)
+    }
+  } catch (err) {
+    console.error(err)
+  }
+  fs.writeFile(folderName + outputFileName, formatReport(JSON.stringify(report)), (err) => {
+    if (err) return console.log(err)
+  })
 }
-module.exports = { findMatches, findDuplicatePrices, findPricesOverAmount, generateSinglePlaceReport, formatReport, printTextFile }
+/*
+  Take each different category and generate a report for each of them
+  Have the totals at the top and then the full thing at the bottom 
+
+  This needs to return an array with everything
+*/
+const generateCategoryReport = (filename) => {
+  let workbook = XLSX.readFile(filename) // load the actual workbook
+  let sheetName = workbook.SheetNames[0] // get the name of the first sheet
+  let worksheet = workbook.Sheets[sheetName] // get the actual sheet
+  // Return JSON version of the sheet
+  let filteredWorksheet = XLSX.utils
+    .sheet_to_json(worksheet)
+    .map((x) => ({ Description: x['Description'], Amount: x['Amount'], Category: x['Category'] }))
+  filteredWorksheet = filteredWorksheet.sort((a, b) => {
+    var x = a.Category
+    var y = b.Category
+    return x < y ? -1 : x > y ? 1 : 0
+  })
+
+  let categories = {}
+  filteredWorksheet.forEach((x) => {
+    if (categories.hasOwnProperty(x.Category)) categories[x.Category] = categories[x.Category] + x.Amount
+    else categories[x.Category] = x.Amount
+  })
+
+  Object.keys(categories).forEach((x) => {
+    filteredWorksheet.unshift({ [x]: categories[x] })
+  })
+
+  printTextFile('Categories Report.txt', filteredWorksheet)
+}
+module.exports = {
+  findMatches,
+  findDuplicatePrices,
+  findPricesOverAmount,
+  generateSinglePlaceReport,
+  formatReport,
+  printTextFile,
+  generateCategoryReport,
+}

@@ -36,26 +36,12 @@ const main = () => {
   venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
   // Find the matches
   let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
-  // Print Matches
-  // foundCharges.forEach((charge, index) => {
-  //   console.log('FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  // })
-  // missingCharges.forEach((charge, index) => {
-  //   console.log('NOT FOUND CHARGES: ', charge.Description, ' ', charge.Amount)
-  // })
-  // Find any duplicates
-  // let duplicateDoordashPrices = reporting.findDuplicatePrices(doordashSheetJson)
-  // let expensiveDoordashPrices = reporting.findPricesOverAmount(doordashSheetJson, 20)
-  let singlePlacePrices = reporting.generateSinglePlaceReport(chaseSheetJson, 'COSTCO')
-  // console.log(singlePlacePrices)
-  reporting.printTextFile('foundCharges.txt', foundCharges)
-  reporting.printTextFile('missingCharges.txt', missingCharges)
-  // reporting.printTextFile('singePlacePrices.txt', singlePlacePrices)
-  reporting.printTextFile('doordashTotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
-  reporting.printTextFile('olibolitotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
-  reporting.printTextFile('pricesOver50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
-
-
-  // let duplicateVenmoPrices = reporting.findDuplicatePrices(venmoSheetJson)
+  
+  reporting.printTextFile('Found Charges.txt', foundCharges)
+  reporting.printTextFile('Missing Charges.txt', missingCharges)
+  reporting.printTextFile('DoorDash Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
+  reporting.printTextFile('Oliboli Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
+  reporting.printTextFile('Prices Over 50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
+  reporting.generateCategoryReport('statements/08/Chase4589.csv')
 }
 main()
