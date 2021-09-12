@@ -51,9 +51,10 @@ const findDuplicatePrices = (workSheetJson) => {
 const generateSinglePlaceReport = (workSheetJson, storeName) => {
   // Filter by the storename on description
   let storesFound = workSheetJson.filter((x) => x.Description.includes(storeName))
-  let totalSpent = storesFound.reduce((accumulator, currentValue) => ({
+
+  let totalSpent = storesFound.length > 0 ? storesFound.reduce((accumulator, currentValue) => ({
     Amount: accumulator.Amount + currentValue.Amount,
-  }))
+  })) : []
   return { 
       storesFound, totalSpent
   }
