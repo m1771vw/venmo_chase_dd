@@ -16,6 +16,7 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
 
 const filterUnwantedVenmoData = (venmoSheetJson) => {
   // Reduce VenmoSheet and take out the ones I don't want
+  venmoSheetJson.filter(x => x.Description !== undefined)
   return venmoSheetJson.filter(
     (x) =>
       x.Description !== undefined &&
@@ -23,15 +24,15 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
       x.Description !== 'Note' &&
       x.Amount !== 'Amount (total)' &&
       typeof x.Description === 'string' &&
-      typeof x.Amount === 'number' // sometimes is a string?? but is now a number now somehow
+      typeof x.Amount === 'string' // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
   )
 }
 
 const main = () => {
   console.log('Starting Program...')
-  let chaseSheetJson = importSheet('Chase4589_Activity20210701_20210728_20210729.csv', 'Description', 'Amount')
+  let chaseSheetJson = importSheet('statements/08/Chase4589.csv', 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
-  let venmoSheetJson = importSheet('venmo_statement_0701_0728.csv', '__EMPTY_4', '__EMPTY_7')
+  let venmoSheetJson = importSheet('statements/08/venmo.csv', '__EMPTY_4', '__EMPTY_7')
   venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
   // Find the matches
   let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
@@ -49,7 +50,7 @@ const main = () => {
   // console.log(singlePlacePrices)
   reporting.printTextFile('foundCharges.txt', foundCharges)
   reporting.printTextFile('missingCharges.txt', missingCharges)
-  reporting.printTextFile('singePlacePrices.txt', singlePlacePrices)
+  // reporting.printTextFile('singePlacePrices.txt', singlePlacePrices)
   reporting.printTextFile('doordashTotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
   reporting.printTextFile('olibolitotal.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
   reporting.printTextFile('pricesOver50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
