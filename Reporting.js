@@ -12,7 +12,8 @@ const findMatches = (doordashSheetJson, venmosheetJson) => {
     // Keep track of whether we found something or not
     let chargeFound = false
     // ex: 12.1 found -> 12.10 for consistency
-    if (formattedCharge[formattedCharge.length - 2] === '.') formattedCharge = formattedCharge + '0'
+    if (formattedCharge[formattedCharge.length - 2] === '.')
+      formattedCharge = formattedCharge + '0'
     venmosheetJson.forEach((x) => {
       // if data comes in like + $, remove this. Might not appear in newer venmo data
       let formattedAmount = x.Amount.toString().replace('+ $', '')
@@ -52,9 +53,13 @@ const findDuplicatePrices = (workSheetJson) => {
 // Return all prices and return total price
 // Also, use include not hard equal
 // Ex: WHOLEFDS JAM -> WHOLEFDS JAM 10201 & WHOLEFDS JAM LA
-const generateSinglePlaceReport = (workSheetJson, storeName) => {
+const generateSinglePlaceReport = (
+  workSheetJson,
+  storeName,
+  field = 'Description'
+) => {
   // Filter by the storename on description
-  let storesFound = workSheetJson.filter((x) => x.Description.includes(storeName))
+  let storesFound = workSheetJson.filter((x) => x[field].includes(storeName))
 
   let totalSpent =
     storesFound.length > 0
@@ -84,7 +89,11 @@ const findPricesOverAmount = (workSheetJson, findPrice) => {
 
 // Remove brackets, curlies, replaces commands with new lines
 const formatReport = (report) => {
-  return report.replace(/\[/g, '').replace(/\]/g, '').replace(/\{/g, '').replace(/\}\,/g, '\n')
+  return report
+    .replace(/\[/g, '')
+    .replace(/\]/g, '')
+    .replace(/\{/g, '')
+    .replace(/\}\,/g, '\n')
 }
 // Print text file and has default folder name to reports/
 // Params:
@@ -98,9 +107,13 @@ const printTextFile = (outputFileName, report, folderName = 'reports/') => {
   } catch (err) {
     console.error(err)
   }
-  fs.writeFile(folderName + outputFileName, formatReport(JSON.stringify(report)), (err) => {
-    if (err) return console.log(err)
-  })
+  fs.writeFile(
+    folderName + outputFileName,
+    formatReport(JSON.stringify(report)),
+    (err) => {
+      if (err) return console.log(err)
+    }
+  )
 }
 /*
   Take each different category and generate a report for each of them
@@ -113,9 +126,11 @@ const generateCategoryReport = (filename) => {
   let sheetName = workbook.SheetNames[0] // get the name of the first sheet
   let worksheet = workbook.Sheets[sheetName] // get the actual sheet
   // Return JSON version of the sheet
-  let filteredWorksheet = XLSX.utils
-    .sheet_to_json(worksheet)
-    .map((x) => ({ Description: x['Description'], Amount: x['Amount'], Category: x['Category'] }))
+  let filteredWorksheet = XLSX.utils.sheet_to_json(worksheet).map((x) => ({
+    Description: x['Description'],
+    Amount: x['Amount'],
+    Category: x['Category'],
+  }))
   filteredWorksheet = filteredWorksheet.sort((a, b) => {
     var x = a.Category
     var y = b.Category
@@ -124,7 +139,8 @@ const generateCategoryReport = (filename) => {
 
   let categories = {}
   filteredWorksheet.forEach((x) => {
-    if (categories.hasOwnProperty(x.Category)) categories[x.Category] = categories[x.Category] + x.Amount
+    if (categories.hasOwnProperty(x.Category))
+      categories[x.Category] = categories[x.Category] + x.Amount
     else categories[x.Category] = x.Amount
   })
 
@@ -135,43 +151,89 @@ const generateCategoryReport = (filename) => {
   printTextFile('Categories Report.txt', filteredWorksheet)
 }
 
-const generateVenmoChargeReport = (filename) => {
+const generateVenmoReport = (filename) => {
   let workbook = XLSX.readFile(filename) // load the actual workbook
   let sheetName = workbook.SheetNames[0] // get the name of the first sheet
   let worksheet = workbook.Sheets[sheetName] // get the actual sheet
   // Return JSON version of the sheet
-  let filteredWorksheet = XLSX.utils
-    .sheet_to_json(worksheet)
-    .map((x) => ({ Description: x['__EMPTY_4'], Amount: x['__EMPTY_7'], Type: x['__EMPTY_2'], From: x['__EMPTY_5'], To: x['__EMPTY_6'] }))
-    filteredWorksheet = filteredWorksheet.filter(
-      (x) =>
-        x.Description !== undefined &&
-        x.Amount !== undefined &&
-        x.Description !== 'Note' &&
-        x.Amount !== 'Amount (total)' &&
-        typeof x.Description === 'string' &&
-        typeof x.Amount === 'string' // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
-    )
+  let filteredWorksheet = XLSX.utils.sheet_to_json(worksheet).map((x) => ({
+    Description: x['__EMPTY_4'],
+    Amount: x['__EMPTY_7'],
+    Type: x['__EMPTY_2'],
+    From: x['__EMPTY_5'],
+    To: x['__EMPTY_6'],
+  }))
+  filteredWorksheet = filteredWorksheet.filter(
+    (x) =>
+      x.Description !== undefined &&
+      x.Amount !== undefined &&
+      x.Description !== 'Note' &&
+      x.Amount !== 'Amount (total)' &&
+      typeof x.Description === 'string' &&
+      typeof x.Amount === 'number'
+    // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+    // UPDATE NOTE: It will be number on winOS, string on mac
+  )
+  let chargeWorksheet = filteredWorksheet.filter(
+    (x) => x.Type === 'Charge' && x.To !== 'William Yang'
+  )
+  let paymentWorksheet = filteredWorksheet.filter(
+    (x) => x.Type === 'Payment' && x.From !== 'William Yang'
+  )
 
-    // Loop through the entier thing and make two different ones for charge and payment
-    let charge = {}
-    let payment = {}
-    filteredWorksheet.forEach((x) => {
-      if (categories.hasOwnProperty(x.Category)) categories[x.Category] = categories[x.Category] + x.Amount
+  // Loop through the entier thing and make two different ones for charge and payment
+  let charge = {}
+  let payment = {}
+  chargeWorksheet.forEach((x) => {
+    if (charge.hasOwnProperty(x.Type))
+      charge[x.Type] = charge[x.Type] + x.Amount
+    else charge[x.Type] = x.Amount
+  })
+  paymentWorksheet.forEach((x) => {
+    if (payment.hasOwnProperty(x.Type))
+      payment[x.Type] = payment[x.Type] + x.Amount
+    else payment[x.Type] = x.Amount
+  })
+
+  Object.keys(charge).forEach((x) => {
+    chargeWorksheet.unshift({ [x]: charge[x] })
+  })
+  Object.keys(payment).forEach((x) => {
+    paymentWorksheet.unshift({ [x]: payment[x] })
+  })
+
+  printTextFile('Venom Charge Report.txt', chargeWorksheet)
+  printTextFile('Venom Payment Report.txt', paymentWorksheet)
+}
+
+const generateSingleCategoryReport = (filename, category) => {
+  let workbook = XLSX.readFile(filename) // load the actual workbook
+  let sheetName = workbook.SheetNames[0] // get the name of the first sheet
+  let worksheet = workbook.Sheets[sheetName] // get the actual sheet
+  // Return JSON version of the sheet
+  let filteredWorksheet = XLSX.utils.sheet_to_json(worksheet).map((x) => ({
+    Description: x['Description'],
+    Amount: x['Amount'],
+    Category: x['Category'],
+  }))
+
+  let categories = {}
+  let singleCategoryWorksheet = []
+  filteredWorksheet.forEach((x) => {
+    if (x.Category === category) {
+      if (categories.hasOwnProperty(x.Category)) 
+        categories[x.Category] = categories[x.Category] + x.Amount
       else categories[x.Category] = x.Amount
-    })
-  
-    Object.keys(categories).forEach((x) => {
-      filteredWorksheet.unshift({ [x]: categories[x] })
-    })
-  
-    printTextFile('Categories Report.txt', filteredWorksheet)
+      singleCategoryWorksheet.push(x)
+    }
+  })
+
+  Object.keys(categories).forEach((x) => {
+    singleCategoryWorksheet.unshift({ [x]: categories[x] })
+  })
+
+  printTextFile(`${category} Report.txt`, singleCategoryWorksheet)
 }
-
-const generateVenmoPaymentReport = (filename) => {
-
-}
-
 module.exports = {
   findMatches,
   findDuplicatePrices,
@@ -180,6 +242,6 @@ module.exports = {
   formatReport,
   printTextFile,
   generateCategoryReport,
-  generateVenmoChargeReport,
-  generateVenmoPaymentReport
+  generateVenmoReport,
+  generateSingleCategoryReport,
 }
