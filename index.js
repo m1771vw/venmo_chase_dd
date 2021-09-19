@@ -29,7 +29,7 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
 
 const main = () => {
   console.log('Starting Program...')
-  reporting.generateVenmoChargeReport('statements/08/venmo.csv')
+  reporting.generateVenmoChargeReport('statements/08/venmo.csv', 'Categories Report.txt')
   reporting.generateVenmoPaymentReport('statements/08/venmo.csv')
   let chaseSheetJson = importSheet('statements/08/Chase4589.csv', 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
@@ -43,6 +43,6 @@ const main = () => {
   reporting.printTextFile('DoorDash Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
   reporting.printTextFile('Oliboli Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
   reporting.printTextFile('Prices Over 50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
-  reporting.generateCategoryReport('statements/08/Chase4589.csv')
+  reporting.generateCategoryReport('statements/08/Chase4589.csv', 'Categories Report.txt')
 }
 main()

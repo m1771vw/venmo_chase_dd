@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/m1771vw/venmo_chase_dd#readme",
   "dependencies": {
+    "dotenv": "^10.0.0",
     "xlsx": "^0.16.9"
   }
 }

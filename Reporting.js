@@ -102,13 +102,14 @@ const printTextFile = (outputFileName, report, folderName = 'reports/') => {
     if (err) return console.log(err)
   })
 }
+
 /*
   Take each different category and generate a report for each of them
   Have the totals at the top and then the full thing at the bottom 
 
   This needs to return an array with everything
 */
-const generateCategoryReport = (filename) => {
+const generateCategoryReport = (filename, reportFileName) => {
   let workbook = XLSX.readFile(filename) // load the actual workbook
   let sheetName = workbook.SheetNames[0] // get the name of the first sheet
   let worksheet = workbook.Sheets[sheetName] // get the actual sheet
@@ -132,10 +133,10 @@ const generateCategoryReport = (filename) => {
     filteredWorksheet.unshift({ [x]: categories[x] })
   })
 
-  printTextFile('Categories Report.txt', filteredWorksheet)
+  printTextFile(reportFileName, filteredWorksheet)
 }
 
-const generateVenmoChargeReport = (filename) => {
+const generateVenmoChargeReport = (filename, reportFileName) => {
   let workbook = XLSX.readFile(filename) // load the actual workbook
   let sheetName = workbook.SheetNames[0] // get the name of the first sheet
   let worksheet = workbook.Sheets[sheetName] // get the actual sheet
@@ -165,7 +166,7 @@ const generateVenmoChargeReport = (filename) => {
       filteredWorksheet.unshift({ [x]: categories[x] })
     })
   
-    printTextFile('Categories Report.txt', filteredWorksheet)
+    printTextFile(reportFileName, filteredWorksheet)
 }
 
 const generateVenmoPaymentReport = (filename) => {

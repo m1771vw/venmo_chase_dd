@@ -121,3 +121,5 @@ plan.txt
 *.csv
 *.xlsx
 /reports
+/temp_coding_challenge
+.env
