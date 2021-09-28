@@ -23,26 +23,34 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
       x.Description !== 'Note' &&
       x.Amount !== 'Amount (total)' &&
       typeof x.Description === 'string' &&
-      typeof x.Amount === 'string' // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+      typeof x.Amount === 'string' 
+      // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+      // UPDATE NOTE: It will be number on winOS, string on mac
+      // UPDATE NOTE: I think it depends on the month tbh, need to .env this
   )
 }
 
 const main = () => {
   console.log('Starting Program...')
-  reporting.generateVenmoChargeReport('statements/08/venmo.csv', 'Categories Report.txt')
-  reporting.generateVenmoPaymentReport('statements/08/venmo.csv')
-  let chaseSheetJson = importSheet('statements/08/Chase4589.csv', 'Description', 'Amount')
+  let month = '08'
+  let chaseSheetName = `statements/${month}/Chase4589.csv`
+  let venmoSheetName = `statements/${month}/venmo.csv`
+  let chaseSheetJson = importSheet(chaseSheetName, 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
-  let venmoSheetJson = importSheet('statements/08/venmo.csv', '__EMPTY_4', '__EMPTY_7')
+  let venmoSheetJson = importSheet(venmoSheetName, '__EMPTY_4', '__EMPTY_7')
   venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
   // Find the matches
   let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
   
-  reporting.printTextFile('Found Charges.txt', foundCharges)
-  reporting.printTextFile('Missing Charges.txt', missingCharges)
-  reporting.printTextFile('DoorDash Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'DOORDASH'))
-  reporting.printTextFile('Oliboli Total.txt', reporting.generateSinglePlaceReport(chaseSheetJson, 'OLIBOLI'))
-  reporting.printTextFile('Prices Over 50.txt', reporting.findPricesOverAmount(chaseSheetJson, 50))
-  reporting.generateCategoryReport('statements/08/Chase4589.csv', 'Categories Report.txt')
+  reporting.printTextFile(`${month}/Found Charges.txt`, foundCharges)
+  reporting.printTextFile(`${month}/Missing Charges.txt`, missingCharges)
+  reporting.printTextFile(`${month}/DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
+  reporting.printTextFile(`${month}/StaterBros Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
+  reporting.printTextFile(`${month}/Oliboli Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `OLIBOLI`))
+  reporting.printTextFile(`${month}/Prices Over 50.txt`, reporting.findPricesOverAmount(chaseSheetJson, 50))
+  reporting.generateVenmoReport(venmoSheetName)
+  reporting.generateCategoryReport(chaseSheetName)
+  reporting.generateSingleCategoryReport(chaseSheetName,`${month}/Gas`)
+  reporting.generateSingleCategoryReport(chaseSheetName,`${month}/Entertainment`)
 }
 main()
