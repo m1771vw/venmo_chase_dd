@@ -48,16 +48,18 @@ const findDuplicatePrices = (workSheetJson) => {
   return duplicateAmounts
 }
 
-// Provide a vendor to look for and it'll return a report
-// Ex: Give me all prices from Stater Bros
-// Return all prices and return total price
-// Also, use include not hard equal
-// Ex: WHOLEFDS JAM -> WHOLEFDS JAM 10201 & WHOLEFDS JAM LA
-const generateSinglePlaceReport = (
-  workSheetJson,
-  storeName,
-  field = 'Description'
-) => {
+/**
+ * 
+ * Provide a vendor to look for and it'll return a report
+ * Ex: Give me all prices from Stater Bros
+ * Return all prices and return total price
+ * Also, use include not hard equal
+ * Ex: WHOLEFDS JAM -> WHOLEFDS JAM 10201 & WHOLEFDS JAM LA
+ * @param {object} workSheetJson 
+ * @param {string} storeName 
+ * @param {string} field 
+ */
+const generateSinglePlaceReport = (workSheetJson,storeName,field = 'Description') => {
   // Filter by the storename on description
   let storesFound = workSheetJson.filter((x) => x[field].includes(storeName))
 
@@ -67,10 +69,7 @@ const generateSinglePlaceReport = (
           Amount: accumulator.Amount + currentValue.Amount,
         }))
       : []
-  return {
-    storesFound,
-    totalSpent,
-  }
+  return { storesFound, totalSpent }
 }
 // Return all the items that are over the high price point
 const findPricesOverAmount = (workSheetJson, findPrice) => {
@@ -152,7 +151,7 @@ const generateCategoryReport = (filename, reportFileName) => {
   printTextFile(reportFileName, filteredWorksheet)
 }
 
-const generateVenmoReport = (filename, reportFileName) => {
+const generateVenmoReport = (filename, month) => {
   let workbook = XLSX.readFile(filename) // load the actual workbook
   let sheetName = workbook.SheetNames[0] // get the name of the first sheet
   let worksheet = workbook.Sheets[sheetName] // get the actual sheet
@@ -203,8 +202,8 @@ const generateVenmoReport = (filename, reportFileName) => {
     paymentWorksheet.unshift({ [x]: payment[x] })
   })
 
-  printTextFile('Venom Charge Report.txt', chargeWorksheet)
-  printTextFile('Venom Payment Report.txt', paymentWorksheet)
+  printTextFile(`${month}/Venmo Charge Report.txt`, chargeWorksheet)
+  printTextFile(`${month}/Venmo Payment Report.txt`, paymentWorksheet)
 }
 
 const generateSingleCategoryReport = (filename, category) => {
