@@ -4,14 +4,14 @@ fs = require('fs')
 require('dotenv').config()
 const reporting = require('./Reporting')
 
-const { MONTH, CHASE_WORKSHEET, VENMO_WORKSHEET } = process.env;
+const { MONTH, CHASE_WORKSHEET, VENMO_WORKSHEET } = process.env
 
 /**
- * 
- * @param {string} filename 
- * @param {string} descriptionColumn 
- * @param {string} amountColumn 
- * @returns 
+ *
+ * @param {string} filename
+ * @param {string} descriptionColumn
+ * @param {string} amountColumn
+ * @returns
  */
 const importSheet = (filename, descriptionColumn, amountColumn) => {
   // Load the workbook
@@ -26,8 +26,8 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
 }
 /**
  * Take out the properties from the Venmo report we don't want
- * @param {array} venmoSheetJson 
- * @returns 
+ * @param {array} venmoSheetJson
+ * @returns
  */
 const filterUnwantedVenmoData = (venmoSheetJson) => {
   // Reduce VenmoSheet and take out the ones I don't want
@@ -38,10 +38,10 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
       x.Description !== 'Note' &&
       x.Amount !== 'Amount (total)' &&
       typeof x.Description === 'string' &&
-      typeof x.Amount === 'string' 
-      // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
-      // UPDATE NOTE: It will be number on winOS, string on mac
-      // UPDATE NOTE: I think it depends on the month tbh, need to .env this
+      typeof x.Amount === 'string'
+    // NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+    // UPDATE NOTE: It will be number on winOS, string on mac
+    // UPDATE NOTE: I think it depends on the month tbh, need to .env this
   )
 }
 
@@ -55,15 +55,15 @@ const main = () => {
   venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
   // Find the matches
   let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
-  
+
   reporting.printTextFile(`Found Charges.txt`, foundCharges)
   reporting.printTextFile(`Missing Charges.txt`, missingCharges)
   reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
   reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
   reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
   reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
-  reporting.generateSingleCategoryReport(chaseSheetName,`Gas`)
-  reporting.generateSingleCategoryReport(chaseSheetName,`Entertainment`)
+  reporting.generateSingleCategoryReport(chaseSheetName, `Gas`)
+  reporting.generateSingleCategoryReport(chaseSheetName, `Entertainment`)
 }
 
 main()
