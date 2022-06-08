@@ -2,10 +2,17 @@
 if (typeof require !== 'undefined') XLSX = require('xlsx')
 fs = require('fs')
 require('dotenv').config()
+const reporting = require('./Reporting')
 
 const { MONTH, CHASE_WORKSHEET, VENMO_WORKSHEET } = process.env;
 
-const reporting = require('./Reporting')
+/**
+ * 
+ * @param {string} filename 
+ * @param {string} descriptionColumn 
+ * @param {string} amountColumn 
+ * @returns 
+ */
 const importSheet = (filename, descriptionColumn, amountColumn) => {
   // Load the workbook
   // TODO: - app config
@@ -17,7 +24,11 @@ const importSheet = (filename, descriptionColumn, amountColumn) => {
     .sheet_to_json(worksheet)
     .map((x) => ({ Description: x[descriptionColumn], Amount: x[amountColumn] }))
 }
-
+/**
+ * Take out the properties from the Venmo report we don't want
+ * @param {array} venmoSheetJson 
+ * @returns 
+ */
 const filterUnwantedVenmoData = (venmoSheetJson) => {
   // Reduce VenmoSheet and take out the ones I don't want
   return venmoSheetJson.filter(
@@ -36,9 +47,8 @@ const filterUnwantedVenmoData = (venmoSheetJson) => {
 
 const main = () => {
   console.log('Starting Program...')
-  let month = MONTH
-  let chaseSheetName = `statements/${month}/${CHASE_WORKSHEET}.csv`
-  let venmoSheetName = `statements/${month}/${VENMO_WORKSHEET}.csv`
+  let chaseSheetName = `statements/${MONTH}/${CHASE_WORKSHEET}.csv`
+  let venmoSheetName = `statements/${MONTH}/${VENMO_WORKSHEET}.csv`
   let chaseSheetJson = importSheet(chaseSheetName, 'Description', 'Amount')
   let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
   let venmoSheetJson = importSheet(venmoSheetName, '__EMPTY_4', '__EMPTY_7')
@@ -46,14 +56,14 @@ const main = () => {
   // Find the matches
   let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
   
-  reporting.printTextFile(`${month}/Found Charges.txt`, foundCharges)
-  reporting.printTextFile(`${month}/Missing Charges.txt`, missingCharges)
-  reporting.printTextFile(`${month}/DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
-  reporting.printTextFile(`${month}/Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
-  reporting.generateVenmoReport(venmoSheetName, `${month}`)
-  reporting.generateCategoryReport(chaseSheetName, `${month}/Chase Report.txt`)
-  reporting.generateSingleCategoryReport(chaseSheetName,`${month}/Gas`)
-  reporting.generateSingleCategoryReport(chaseSheetName,`${month}/Entertainment`)
+  reporting.printTextFile(`Found Charges.txt`, foundCharges)
+  reporting.printTextFile(`Missing Charges.txt`, missingCharges)
+  reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
+  reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
+  reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
+  reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
+  reporting.generateSingleCategoryReport(chaseSheetName,`Gas`)
+  reporting.generateSingleCategoryReport(chaseSheetName,`Entertainment`)
 }
 
 main()

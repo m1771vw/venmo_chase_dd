@@ -1,6 +1,8 @@
 // Import the library
 if (typeof require !== 'undefined') XLSX = require('xlsx')
 fs = require('fs')
+require('dotenv').config()
+const { MONTH } = process.env
 
 const findMatches = (doordashSheetJson, venmosheetJson) => {
   console.log('Trying to find matches.....')
@@ -49,17 +51,21 @@ const findDuplicatePrices = (workSheetJson) => {
 }
 
 /**
- * 
+ *
  * Provide a vendor to look for and it'll return a report
  * Ex: Give me all prices from Stater Bros
  * Return all prices and return total price
  * Also, use include not hard equal
  * Ex: WHOLEFDS JAM -> WHOLEFDS JAM 10201 & WHOLEFDS JAM LA
- * @param {object} workSheetJson 
- * @param {string} storeName 
- * @param {string} field 
+ * @param {object} workSheetJson
+ * @param {string} storeName
+ * @param {string} field
  */
-const generateSinglePlaceReport = (workSheetJson,storeName,field = 'Description') => {
+const generateSinglePlaceReport = (
+  workSheetJson,
+  storeName,
+  field = 'Description'
+) => {
   // Filter by the storename on description
   let storesFound = workSheetJson.filter((x) => x[field].includes(storeName))
 
@@ -94,14 +100,19 @@ const formatReport = (report) => {
     .replace(/\{/g, '')
     .replace(/\}\,/g, '\n')
 }
-// Print text file and has default folder name to reports/
-// Params:
-//  report: Array
+
+/**
+ * Take in a report and print out the information into a text file
+ * @param {string} outputFileName Name of outputted text file
+ * @param {Array} report Array of objects that contain report information
+ * @param {string} folderName Folder to use, defaulted to 'reports/'
+ */
 const printTextFile = (outputFileName, report, folderName = 'reports/') => {
   // let folderName = 'reports/'
+  folderName += MONTH + '/'
   try {
     if (!fs.existsSync(folderName)) {
-      fs.mkdirSync(folderName)
+      fs.mkdirSync(folderName, { recursive: true })
     }
   } catch (err) {
     console.error(err)
@@ -202,8 +213,8 @@ const generateVenmoReport = (filename, month) => {
     paymentWorksheet.unshift({ [x]: payment[x] })
   })
 
-  printTextFile(`${month}/Venmo Charge Report.txt`, chargeWorksheet)
-  printTextFile(`${month}/Venmo Payment Report.txt`, paymentWorksheet)
+  printTextFile(`Venmo Charge Report.txt`, chargeWorksheet)
+  printTextFile(`Venmo Payment Report.txt`, paymentWorksheet)
 }
 
 const generateSingleCategoryReport = (filename, category) => {
@@ -221,7 +232,7 @@ const generateSingleCategoryReport = (filename, category) => {
   let singleCategoryWorksheet = []
   filteredWorksheet.forEach((x) => {
     if (x.Category === category) {
-      if (categories.hasOwnProperty(x.Category)) 
+      if (categories.hasOwnProperty(x.Category))
         categories[x.Category] = categories[x.Category] + x.Amount
       else categories[x.Category] = x.Amount
       singleCategoryWorksheet.push(x)
@@ -234,6 +245,7 @@ const generateSingleCategoryReport = (filename, category) => {
 
   printTextFile(`${category} Report.txt`, singleCategoryWorksheet)
 }
+
 module.exports = {
   findMatches,
   findDuplicatePrices,
