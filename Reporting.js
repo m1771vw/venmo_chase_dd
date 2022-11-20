@@ -169,7 +169,7 @@ const generateVenmoReport = (filename, month) => {
 			x.Description !== 'Note' &&
 			x.Amount !== 'Amount (total)' &&
 			typeof x.Description === 'string' &&
-			typeof x.Amount === 'number'
+			(typeof x.Amount === 'number' || typeof x.Amount === 'string')
 		// NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
 		// UPDATE NOTE: It will be number on winOS, string on mac
 	)

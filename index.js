@@ -58,14 +58,14 @@ const main = () => {
 	// Find the matches
 	let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
 
-	// reporting.printTextFile(`Found Charges.txt`, foundCharges)
+	reporting.printTextFile(`Found Charges.txt`, foundCharges)
 	reporting.printTextFile(`Missing Charges.txt`, missingCharges)
-	// reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
-	// reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
-	// reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
-	// reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
-	// reporting.generateSingleCategoryReport(chaseSheetName, `Gas`)
-	// reporting.generateSingleCategoryReport(chaseSheetName, `Entertainment`)
+	reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
+	reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
+	reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
+	reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
+	reporting.generateSingleCategoryReport(chaseSheetName, `Gas`)
+	reporting.generateSingleCategoryReport(chaseSheetName, `Entertainment`)
 }
 
 main()
