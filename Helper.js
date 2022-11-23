@@ -7,7 +7,27 @@ const determineDateFormat = (date) => {
 	return formatDate(date)
 }
 
+const convertVenmoStringToFloat = (amount) => {
+	return typeof amount === 'string'
+		? parseFloat(amount.replace('-', '').replace('+', '').replace('$', '').trim())
+		: amount
+}
+
+const calculateAmount = (filteredWorksheet) => {
+	let cashFlowType = {}
+	filteredWorksheet.forEach((transaction) => {
+		if (cashFlowType.hasOwnProperty(transaction.Type)) {
+			cashFlowType[transaction.Type] = cashFlowType[transaction.Type] + convertVenmoStringToFloat(transaction.Amount)
+		} else {
+			cashFlowType[transaction.Type] = convertVenmoStringToFloat(transaction.Amount)
+		}
+	})
+	return cashFlowType
+}
+
 module.exports = {
 	excelDateToJSDate,
 	determineDateFormat,
+	convertVenmoStringToFloat,
+	calculateAmount,
 }

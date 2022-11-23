@@ -3,6 +3,7 @@ if (typeof require !== 'undefined') XLSX = require('xlsx')
 fs = require('fs')
 require('dotenv').config()
 const { MONTH } = process.env
+const { convertVenmoStringToFloat, calculateAmount } = require('./Helper')
 
 const findMatches = (doordashSheetJson, venmosheetJson) => {
 	console.log('Trying to find matches.....')
@@ -162,41 +163,49 @@ const generateVenmoReport = (filename, month) => {
 		From: x['__EMPTY_5'],
 		To: x['__EMPTY_6'],
 	}))
+	// let filteredWorksheet2 = filteredWorksheet = filteredWorksheet.filter(
+	// 	(x) =>
+	// 		x.Description !== undefined &&
+	// 		x.Amount !== undefined &&
+	// 		x.Description !== 'Note' &&
+	// 		x.Amount !== 'Amount (total)' &&
+	// 		// typeof x.Description === 'string' &&
+	// 		(typeof x.Amount === 'number' || typeof x.Amount === 'string')
+	// 	// NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
+	// 	// UPDATE NOTE: It will be number on winOS, string on mac
+	// )
 	filteredWorksheet = filteredWorksheet.filter(
 		(x) =>
 			x.Description !== undefined &&
 			x.Amount !== undefined &&
 			x.Description !== 'Note' &&
 			x.Amount !== 'Amount (total)' &&
-			typeof x.Description === 'string' &&
+			// typeof x.Description === 'string' &&
 			(typeof x.Amount === 'number' || typeof x.Amount === 'string')
 		// NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
 		// UPDATE NOTE: It will be number on winOS, string on mac
 	)
-	let chargeWorksheet = filteredWorksheet.filter((x) => x.Type === 'Charge' && x.To !== 'William Yang')
-	let paymentWorksheet = filteredWorksheet.filter((x) => x.Type === 'Payment' && x.From !== 'William Yang')
+
+	let incomingChargeWorksheet = filteredWorksheet.filter((x) => x.Type === 'Charge' && x.To !== 'William Yang')
+	let outgoingChargeWorksheet = filteredWorksheet.filter((x) => x.Type === 'Charge' && x.To === 'William Yang')
+
+	let incomingPaymentWorksheet = filteredWorksheet.filter((x) => x.Type === 'Payment' && x.From !== 'William Yang')
+	let outgoingPaymentWorksheet = filteredWorksheet.filter((x) => x.Type === 'Payment' && x.From === 'William Yang')
 
 	// Loop through the entier thing and make two different ones for charge and payment
-	let charge = {}
-	let payment = {}
-	chargeWorksheet.forEach((x) => {
-		if (charge.hasOwnProperty(x.Type)) charge[x.Type] = charge[x.Type] + x.Amount
-		else charge[x.Type] = x.Amount
+	let incomingCharge = calculateAmount(incomingChargeWorksheet)
+  // TODO: - Need to figure out why some amounts are numbers and not strings fmor the workbook
+	let incomingPayment = calculateAmount(incomingPaymentWorksheet)
+
+	Object.keys(incomingCharge).forEach((x) => {
+		incomingChargeWorksheet.unshift({ [x]: incomingCharge[x] })
 	})
-	paymentWorksheet.forEach((x) => {
-		if (payment.hasOwnProperty(x.Type)) payment[x.Type] = payment[x.Type] + x.Amount
-		else payment[x.Type] = x.Amount
+	Object.keys(incomingPayment).forEach((x) => {
+		incomingPaymentWorksheet.unshift({ [x]: incomingPayment[x] })
 	})
 
-	Object.keys(charge).forEach((x) => {
-		chargeWorksheet.unshift({ [x]: charge[x] })
-	})
-	Object.keys(payment).forEach((x) => {
-		paymentWorksheet.unshift({ [x]: payment[x] })
-	})
-
-	printTextFile(`Venmo Charge Report.txt`, chargeWorksheet)
-	printTextFile(`Venmo Payment Report.txt`, paymentWorksheet)
+	printTextFile(`Venmo Charge Report.txt`, incomingChargeWorksheet)
+	printTextFile(`Venmo Payment Report.txt`, incomingPaymentWorksheet)
 }
 
 const generateSingleCategoryReport = (filename, category) => {
