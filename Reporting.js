@@ -20,7 +20,8 @@ const findMatches = (doordashSheetJson, venmosheetJson) => {
 		}
 		venmosheetJson.forEach((x) => {
 			// if data comes in like + $, remove this. Might not appear in newer venmo data
-			let formattedAmount = x.Amount.toString().replace('+ $', '')
+			// replace the .00 because Chase is bringing it in as no .00
+			let formattedAmount = x.Amount.toString().replace('+ $', '').replace('.00', '')
 			if (formattedAmount === formattedCharge) {
 				foundCharges.push(charge)
 				chargeFound = true
