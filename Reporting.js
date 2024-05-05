@@ -11,6 +11,9 @@ const findMatches = (doordashSheetJson, venmosheetJson) => {
 	let missingCharges = []
 	doordashSheetJson.forEach((charge, index) => {
 		// Remove negative signs from chase side
+		if (charge.Description.toString() === 'DD DOORDASH THAIWAVE') {
+			console.log('Charge Found')
+		}
 		let formattedCharge = charge.Amount.toString().replace('-', '')
 		// Keep track of whether we found something or not
 		let chargeFound = false
@@ -66,7 +69,7 @@ const findDuplicatePrices = (workSheetJson) => {
  */
 const generateSinglePlaceReport = (workSheetJson, storeName, field = 'Description') => {
 	// Filter by the storename on description
-	let storesFound = workSheetJson.filter((x) => x[field].includes(storeName))
+	let storesFound = workSheetJson.filter((x) => typeof x[field] === 'string' && x[field].includes(storeName))
 
 	let totalSpent =
 		storesFound.length > 0
@@ -195,7 +198,7 @@ const generateVenmoReport = (filename, month) => {
 
 	// Loop through the entier thing and make two different ones for charge and payment
 	let incomingCharge = calculateAmount(incomingChargeWorksheet)
-  // TODO: - Need to figure out why some amounts are numbers and not strings fmor the workbook
+	// TODO: - Need to figure out why some amounts are numbers and not strings fmor the workbook
 	let incomingPayment = calculateAmount(incomingPaymentWorksheet)
 
 	Object.keys(incomingCharge).forEach((x) => {

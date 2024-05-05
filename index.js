@@ -34,13 +34,20 @@ const importSheet = (filename, descriptionColumn, amountColumn, dateColumn) => {
 const filterUnwantedVenmoData = (venmoSheetJson) => {
 	// Reduce VenmoSheet and take out the ones I don't want
 	return venmoSheetJson.filter(
-		(x) =>
-			x.Description !== undefined &&
-			x.Amount !== undefined &&
-			x.Description !== 'Note' &&
-			x.Amount !== 'Amount (total)' &&
-			typeof x.Description === 'string' &&
-			typeof x.Amount === 'string'
+		(x) => {
+			const isValid =
+				x.Description !== undefined &&
+				x.Amount !== undefined &&
+				x.Description !== 'Note' &&
+				x.Amount !== 'Amount (total)' &&
+				typeof x.Description === 'string' &&
+				typeof x.Amount === 'string'
+
+			if (!isValid) {
+				console.log('Filtering this: ', { description: x.Description, amount: x.Amount })
+			}
+			return isValid
+		}
 		// NOTE: Sometimes is a string ('+28.04'), sometimes is a number? This is to remove all the weird numbers (23590)
 		// UPDATE NOTE: It will be number on winOS, string on mac
 		// UPDATE NOTE: I think it depends on the month tbh, need to .env this
@@ -52,20 +59,23 @@ const main = () => {
 	let chaseSheetName = `statements/${MONTH}/${CHASE_WORKSHEET}.csv`
 	let venmoSheetName = `statements/${MONTH}/${VENMO_WORKSHEET}.csv`
 	let chaseSheetJson = importSheet(chaseSheetName, 'Description', 'Amount', 'Transaction Date')
-	let doordashSheetJson = chaseSheetJson.filter((x) => x.Description.includes('DOORDASH'))
+	let doordashSheetJson = chaseSheetJson.filter(
+		(x) => typeof x.Description === 'string' && x.Description.includes('DOORDASH')
+	)
+	chaseSheetJson.forEach((x) => typeof x.Description !== 'string' && console.log('Found Non String: ', x))
 	let venmoSheetJson = importSheet(venmoSheetName, '__EMPTY_4', '__EMPTY_7', '__EMPTY_1')
 	venmoSheetJson = filterUnwantedVenmoData(venmoSheetJson)
 	// Find the matches
 	let { foundCharges, missingCharges } = reporting.findMatches(doordashSheetJson, venmoSheetJson)
 
-	reporting.printTextFile(`Found Charges.txt`, foundCharges)
-	reporting.printTextFile(`Missing Charges.txt`, missingCharges)
-	reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
-	reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
-	reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
-	reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
-	reporting.generateSingleCategoryReport(chaseSheetName, `Gas`)
-	reporting.generateSingleCategoryReport(chaseSheetName, `Entertainment`)
+	// reporting.printTextFile(`Found Charges.txt`, foundCharges)
+	// reporting.printTextFile(`Missing Charges.txt`, missingCharges)
+	// reporting.printTextFile(`DoorDash Total.txt`, reporting.generateSinglePlaceReport(chaseSheetJson, `DOORDASH`))
+	// reporting.printTextFile(`Prices Over 25.txt`, reporting.findPricesOverAmount(chaseSheetJson, 25))
+	// reporting.generateVenmoReport(venmoSheetName, `Venmo Report.txt`)
+	// reporting.generateCategoryReport(chaseSheetName, `Chase Report.txt`)
+	// reporting.generateSingleCategoryReport(chaseSheetName, `Gas`)
+	// reporting.generateSingleCategoryReport(chaseSheetName, `Entertainment`)
 }
 
 main()
